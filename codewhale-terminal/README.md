@@ -13,7 +13,7 @@
 
 ## Installation
 
-1. Add this repository to your Home Assistant add-on store: **Settings → Add-ons → Add-on Store → ⋮ → Repositories**, URL `https://github.com/heytcass/home-assistant-addons`
+1. Add this repository to your Home Assistant add-on store: **Settings → Add-ons → Add-on Store → ⋮ → Repositories**, URL `https://github.com/stevelea/home-assistant-addons`
 2. Install the **Codewhale Terminal** add-on
 3. Configure at minimum `provider` and `api_key` (see [DOCS.md](DOCS.md#options))
 4. Start the add-on and click **OPEN WEB UI**

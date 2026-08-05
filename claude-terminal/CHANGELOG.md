@@ -36,7 +36,7 @@ reliably again.
 
 ### 📦 Prebuilt images
 Installs and updates now pull prebuilt images from GHCR
-(`ghcr.io/heytcass/{arch}-addon-claude-terminal`) instead of building
+(`ghcr.io/stevelea/{arch}-addon-claude-terminal`) instead of building
 locally on your Home Assistant box. This means:
 - **No more build OOM failures on small systems** (#56)
 - **The add-on image is no longer exported into HA backups** — combined with

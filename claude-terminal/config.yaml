@@ -7,7 +7,7 @@ init: false
 
 # Prebuilt images on GHCR — the Supervisor pulls these instead of building
 # locally (no build OOM, no image blobs in backups). Tag = version below.
-image: "ghcr.io/heytcass/{arch}-addon-claude-terminal"
+image: "ghcr.io/stevelea/{arch}-addon-claude-terminal"
 
 # Supported architectures (armv7 dropped in 2.5.0: HAOS dropped 32-bit ARM,
 # and neither Claude Code native builds nor managed Python exist for it)
@@ -16,7 +16,7 @@ arch:
   - amd64
 
 # External resources
-url: "https://github.com/heytcass/home-assistant-addons"
+url: "https://github.com/stevelea/home-assistant-addons"
 
 # Web interface configuration
 ingress: true

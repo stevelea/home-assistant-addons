@@ -7,7 +7,7 @@ init: false
 
 # Prebuilt images on GHCR — the Supervisor pulls these instead of building
 # locally (no build OOM, no image blobs in backups). Tag = version below.
-image: "ghcr.io/heytcass/{arch}-addon-codewhale-terminal"
+image: "ghcr.io/stevelea/{arch}-addon-codewhale-terminal"
 
 # Supported architectures. Codewhale ships a static musl x64 binary and a
 # glibc arm64 binary (needs glibc >= 2.39, provided by the Ubuntu 24.04 base).
@@ -16,7 +16,7 @@ arch:
   - amd64
 
 # External resources
-url: "https://github.com/heytcass/home-assistant-addons"
+url: "https://github.com/stevelea/home-assistant-addons"
 
 # Web interface configuration
 ingress: true
