@@ -83,18 +83,25 @@ podman exec -it test-codewhale-dev /opt/scripts/welcome.sh
 
 #### Config generation
 
-The add-on writes `$CODEWHALE_HOME/config.toml` from `/data/options.json` at boot
-(`scripts/codewhale-config.sh`). Test it locally without a container:
+`config.toml` is bootstrapped **once** on first boot (deepseek + optional
+`api_key` from `/data/options.json`) by `scripts/codewhale-config.sh`;
+afterwards Codewhale owns the file and the add-on never rewrites it. Test the
+bootstrap locally without a container:
 
 ```bash
 mkdir -p /tmp/cwtest
-echo '{"provider": "deepseek", "api_key": "sk-test"}' > /tmp/cwtest/options.json
+echo '{"api_key": "sk-test"}' > /tmp/cwtest/options.json
 CONFIG_FILE=/tmp/cwtest/options.json CODEWHALE_HOME=/tmp/cwtest/.codewhale \
   bash codewhale-terminal/scripts/codewhale-config.sh
-cat /tmp/cwtest/.codewhale/config.toml   # verify provider/api_key
+cat /tmp/cwtest/.codewhale/config.toml   # bootstrap config (deepseek + key)
+
+# Second run: config.toml exists, so the writer leaves it untouched
+CONFIG_FILE=/tmp/cwtest/options.json CODEWHALE_HOME=/tmp/cwtest/.codewhale \
+  bash codewhale-terminal/scripts/codewhale-config.sh
 ```
 
-Inside the container, `codewhale-reconfigure` re-runs this from the terminal.
+Inside the container, `codewhale-reconfigure` re-applies add-on settings
+(ha-mcp) from the terminal.
 
 #### Authentication
 

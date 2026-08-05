@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.3
+
+Slim the add-on configuration page: Codewhale owns its own config after first boot.
+
+- Removed from add-on options: `provider`, `base_url`, `default_text_model`,
+  `reasoning_effort`, `extra_config` — all are Codewhale-native settings,
+  configured inside the terminal (`codewhale auth set`, `/provider`
+  onboarding, or editing `~/.codewhale/config.toml`) and persisting in `/data`.
+- `config.toml` is now bootstrapped once (deepseek + optional `api_key`) and
+  then left to Codewhale — add-on option changes never rewrite it.
+- `dangerously_skip_permissions` now sets `CODEWHALE_APPROVAL_POLICY=never`
+  at launch instead of editing config.toml.
+- `api_key` add-on option is a first-boot bootstrap convenience only.
+
 ## 0.1.2
 
 - Persist the Supervisor token to `/data/supervisor.token` (mode 600) at every

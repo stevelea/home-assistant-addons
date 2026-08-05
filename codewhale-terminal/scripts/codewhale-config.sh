@@ -1,12 +1,15 @@
 #!/bin/bash
 
-# codewhale-config.sh — generate ~/.codewhale/config.toml from the add-on
-# options in /data/options.json. Sourced by run.sh (boot) and
-# reconfigure.sh (manual); safe to run directly: executes the writer.
+# codewhale-config.sh — bootstrap ~/.codewhale/config.toml on FIRST boot only.
 #
-# The file regenerates only when the relevant options changed (a hash of
-# them is stored next to the config), so manual edits survive restarts
-# unless the add-on options change.
+# After the first boot, Codewhale owns this file: provider, model, base_url,
+# reasoning_effort and extra providers are configured inside the terminal
+# (codewhale auth set, the /provider onboarding, or by editing the file) and
+# persist in /data. The add-on never rewrites it, so option changes can't
+# clobber Codewhale's settings.
+#
+# Sourced by run.sh (boot) and reconfigure.sh (manual); safe to run directly:
+# executes the writer.
 
 CONFIG_FILE="${CONFIG_FILE:-/data/options.json}"
 CODEWHALE_HOME="${CODEWHALE_HOME:-/data/.codewhale}"
@@ -19,7 +22,7 @@ mkdir -p "$CODEWHALE_HOME"
 # actual JSON type: booleans are echoed literally, arrays are joined with
 # spaces, everything else (strings, numbers) is echoed raw. Never sniffs the
 # decoded value's prefix — a string that happens to start with "[" is not an
-# array (e.g. extra_config).
+# array.
 get_option() {
     local key="$1"
     local default="$2"
@@ -44,70 +47,42 @@ toml_escape() {
 }
 
 write_codewhale_config() {
-    local provider api_key base_url model reasoning skip
-    provider=$(get_option 'provider' 'deepseek')
-    api_key=$(get_option 'api_key' '')
-    base_url=$(get_option 'base_url' '')
-    model=$(get_option 'default_text_model' '')
-    reasoning=$(get_option 'reasoning_effort' 'auto')
-    skip=$(get_option 'dangerously_skip_permissions' 'false')
-
-    # Provider names become [providers.<name>] tables — restrict to safe chars
-    if ! [[ "$provider" =~ ^[a-zA-Z0-9_-]+$ ]]; then
-        echo "[codewhale-terminal] ERROR: invalid provider name '$provider' (only [a-zA-Z0-9_-] allowed)" >&2
-        return 1
-    fi
-
-    local fingerprint
-    fingerprint=$(printf '%s|%s|%s|%s|%s|%s' \
-        "$provider" "$api_key" "$base_url" "$model" "$reasoning" "$skip" \
-        | sha256sum | cut -d' ' -f1)
-
-    local marker="$CODEWHALE_HOME/.config-hash"
-    if [ -f "$CODEWHALE_HOME/config.toml" ] && [ -f "$marker" ] \
-        && [ "$(cat "$marker" 2>/dev/null)" = "$fingerprint" ]; then
-        echo "[codewhale-terminal] Codewhale config up to date (provider=${provider})"
+    # Codewhale owns config.toml after first boot — never rewrite it.
+    if [ -f "$CODEWHALE_HOME/config.toml" ]; then
+        echo "[codewhale-terminal] config.toml exists — managed by Codewhale; leaving untouched"
         return 0
     fi
 
-    echo "[codewhale-terminal] Writing Codewhale config (provider=${provider})..."
+    # Bootstrap: a minimal config with the deepseek default. The api_key
+    # option is a first-boot convenience; afterwards set/rotate keys inside
+    # Codewhale (codewhale auth set --provider deepseek --api-key-stdin).
+    local api_key
+    api_key=$(get_option 'api_key' '')
+
+    echo "[codewhale-terminal] First boot — bootstrapping Codewhale config (provider=deepseek)..."
 
     local tmp
     tmp=$(mktemp "${CODEWHALE_HOME}/config.toml.XXXXXX")
 
     {
-        echo "# Managed by the Codewhale Terminal add-on."
-        echo "# Regenerate from add-on options with: codewhale-reconfigure"
+        echo "# Bootstrap config written by the Codewhale Terminal add-on (first boot)."
+        echo "# Codewhale owns this file from here on: configure provider/model/key with"
+        echo "# 'codewhale auth set --provider <name> --api-key-stdin', the /provider"
+        echo "# onboarding, or by editing this file."
         echo ""
-        echo "provider = \"$(toml_escape "$provider")\""
+        echo "provider = \"deepseek\""
         echo "auth_mode = \"api_key\""
-        [ -n "$model" ] && echo "default_text_model = \"$(toml_escape "$model")\""
-        echo "reasoning_effort = \"$(toml_escape "$reasoning")\""
-        if [ "$skip" = "true" ]; then
-            echo "# dangerously_skip_permissions: never ask before running tools"
-            echo "approval_policy = \"never\""
-        fi
         echo ""
-        echo "[providers.$(toml_escape "$provider")]"
+        echo "[providers.deepseek]"
         [ -n "$api_key" ] && echo "api_key = \"$(toml_escape "$api_key")\""
-        [ -n "$base_url" ] && echo "base_url = \"$(toml_escape "$base_url")\""
         echo ""
     } > "$tmp"
-
-    # Append user-provided extra TOML (additional providers etc.)
-    local extra
-    extra=$(get_option 'extra_config' '')
-    if [ -n "$extra" ] && [ "$extra" != "null" ]; then
-        printf '\n%s\n' "$extra" >> "$tmp"
-    fi
 
     chmod 600 "$tmp"
     mv "$tmp" "$CODEWHALE_HOME/config.toml"
     chmod 600 "$CODEWHALE_HOME/config.toml"
-    printf '%s' "$fingerprint" > "$marker"
-    chmod 600 "$marker"
 
-    echo "[codewhale-terminal] Codewhale config written to $CODEWHALE_HOME/config.toml"
+    echo "[codewhale-terminal] Bootstrap config written to $CODEWHALE_HOME/config.toml"
 }
 
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then

@@ -1,7 +1,7 @@
 ---
 name: "Codewhale Terminal"
 description: "Web terminal with the Codewhale coding agent CLI and persistent config"
-version: "0.1.2"
+version: "0.1.3"
 slug: "codewhale_terminal"
 init: false
 
@@ -31,14 +31,13 @@ ports:
 ports_description:
   7681/tcp: "Web terminal (not required for ingress)"
 
-# Add-on configuration options
+# Add-on configuration options.
+# Only addon-level settings live here. Codewhale's own settings (provider,
+# model, base_url, reasoning_effort, extra providers) are configured inside
+# Codewhale and stored in /data/.codewhale/config.toml, which Codewhale owns
+# after first boot. api_key below is a first-boot bootstrap convenience only.
 options:
-  provider: "deepseek"
   api_key: ""
-  base_url: ""
-  default_text_model: ""
-  reasoning_effort: "auto"
-  extra_config: ""
   auto_launch_codewhale: true
   codewhale_auto_update: true
   dangerously_skip_permissions: false
@@ -49,12 +48,7 @@ options:
   persistent_apt_packages: []
   persistent_pip_packages: []
 schema:
-  provider: str?
   api_key: password?
-  base_url: str?
-  default_text_model: str?
-  reasoning_effort: str?
-  extra_config: str?
   auto_launch_codewhale: bool?
   codewhale_auto_update: bool?
   dangerously_skip_permissions: bool?

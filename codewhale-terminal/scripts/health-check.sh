@@ -83,7 +83,7 @@ check_config() {
         if grep -q '^api_key\s*=\s*"' "$CODEWHALE_HOME/config.toml" 2>/dev/null; then
             report pass "API key present in config"
         else
-            report warn "No api_key found in config.toml — set the api_key option (or use env *_API_KEY)"
+            report warn "No api_key found in config.toml — configure it inside Codewhale: codewhale auth set --provider <name> --api-key-stdin"
         fi
     else
         report fail "config.toml missing — run codewhale-reconfigure or restart the add-on"

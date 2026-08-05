@@ -21,7 +21,7 @@ FROM ${BUILD_FROM}
 ARG CODEWHALE_VERSION=0.9.3
 
 # Version of this add-on (also in config.yaml) — shown by the welcome banner.
-ARG ADDON_VERSION=0.1.2
+ARG ADDON_VERSION=0.1.3
 
 ENV DEBIAN_FRONTEND=noninteractive
 

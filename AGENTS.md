@@ -49,7 +49,7 @@ curl -X GET http://localhost:7681/
 
 ### Container Execution Flow
 1. `init_environment` — point HOME/XDG at `/data` (persistent), prepend `/data/home/.local/bin` to PATH, repoint `CODEWHALE_TUI_BIN` at a persistent copy when one exists
-2. `write_codewhale_config` — generate `$CODEWHALE_HOME/config.toml` from add-on options (provider, api_key, base_url, model, reasoning_effort, `dangerously_skip_permissions` → `approval_policy = "never"`, plus raw `extra_config` TOML). Regenerates only when the option fingerprint (`.config-hash`) changes
+2. `write_codewhale_config` — bootstrap `$CODEWHALE_HOME/config.toml` on first boot only (deepseek + optional `api_key`). Afterwards Codewhale owns the file: provider/model/key are configured inside the terminal (`codewhale auth set`, `/provider` onboarding, or editing the file) and the add-on never rewrites it
 3. `setup_commands` — install `welcome`, `persist-install`, `ha-context`, `codewhale-doctor`, `codewhale-reconfigure` into `/usr/local/bin`
 4. `update_codewhale` — seed a persistent copy in `/data`, background `codewhale update`, with a runnability guard (a broken persistent binary must not shadow the bundled copy)
 5. `install_persistent_packages` — user-configured apt/pip packages

@@ -270,6 +270,9 @@ start_web_terminal() {
         log "WARNING: It has write access to /config and can control Home"
         log "WARNING: Assistant through the Supervisor API and MCP."
         log "WARNING: =========================================================="
+        # config.toml is owned by Codewhale after first boot — apply the
+        # approval policy via the environment instead of editing the file
+        export CODEWHALE_APPROVAL_POLICY=never
     fi
 
     local launch_command
