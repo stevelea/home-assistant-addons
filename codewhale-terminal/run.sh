@@ -2,12 +2,12 @@
 
 # Codewhale Terminal — Codewhale coding agent in a browser terminal (ttyd + tmux).
 #
-# Startup philosophy (same as claude-terminal): everything the terminal needs
+# Startup philosophy: everything the terminal needs
 # is baked into the image, and nothing on the boot path may depend on the
 # network or block on input. Network work (Codewhale updates, HA context
 # generation) happens in the background after the terminal is already up.
 #
-# Unlike claude-terminal this image has no s6-overlay/bashio (Ubuntu base),
+# This image has no s6-overlay/bashio (Ubuntu base),
 # so this is plain bash: options come from /data/options.json via jq, and the
 # Supervisor runs /run.sh as PID 1. `exec ttyd` at the end makes ttyd PID 1 so
 # signals are handled properly.
@@ -306,7 +306,7 @@ start_web_terminal() {
     local ttyd_theme='{"background":"#0f1420","foreground":"#c0caf5","cursor":"#22d3ee","cursorAccent":"#0f1420","selectionBackground":"#164e63","selectionForeground":"#c0caf5","black":"#15161e","red":"#f7768e","green":"#9ece6a","yellow":"#e0af68","blue":"#7aa2f7","magenta":"#bb9af7","cyan":"#22d3ee","white":"#a9b1d6","brightBlack":"#414868","brightRed":"#f7768e","brightGreen":"#9ece6a","brightYellow":"#e0af68","brightBlue":"#7aa2f7","brightMagenta":"#bb9af7","brightCyan":"#22d3ee","brightWhite":"#c0caf5"}'
 
     # Run ttyd with keepalive configuration to prevent WebSocket disconnects
-    # (same settings as claude-terminal: see their issue #24)
+    # (keepalive settings prevent WebSocket disconnects)
     exec ttyd \
         --port "${port}" \
         --interface 0.0.0.0 \

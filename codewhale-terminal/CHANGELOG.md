@@ -2,7 +2,7 @@
 
 ## 0.1.0
 
-Initial release. Codewhale Terminal — the Codewhale coding agent in a web terminal (ttyd + tmux) as a Home Assistant add-on, sibling of the Claude Terminal add-on.
+Initial release. Codewhale Terminal — the Codewhale coding agent in a web terminal (ttyd + tmux) as a Home Assistant add-on, 
 
 - Web terminal with auto-launched Codewhale (CLI + TUI), tmux session persistence across reconnects
 - API-key auth configured from add-on options; supports all Codewhale providers (DeepSeek, OpenAI-compatible gateways, OpenRouter, Ollama, Moonshot/Kimi, and more)

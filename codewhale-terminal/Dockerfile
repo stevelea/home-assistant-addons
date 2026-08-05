@@ -9,7 +9,7 @@
 # package is only a download wrapper around these same binaries.
 #
 # Runtime packages are baked into the image so startup never depends on the
-# network. Unlike the claude-terminal add-on, this one runs on a plain
+# network. This add-on runs on a plain
 # Ubuntu base (no s6-overlay, no bashio) — startup is plain bash that reads
 # /data/options.json with jq.
 

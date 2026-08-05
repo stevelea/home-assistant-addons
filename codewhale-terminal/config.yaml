@@ -21,7 +21,7 @@ url: "https://github.com/stevelea/home-assistant-addons"
 # Web interface configuration
 ingress: true
 ingress_port: 7681
-panel_icon: mdi:whale
+panel_icon: mdi:console
 panel_title: "Codewhale Terminal"
 panel_admin: true
 

@@ -1,6 +1,6 @@
 # Codewhale Terminal
 
-[Codewhale](https://github.com/Hmbown/CodeWhale) — a terminal coding agent for hosted and local models — in a browser terminal, as a Home Assistant add-on. A sibling of the Claude Terminal add-on in this repository: same ttyd + tmux web-terminal foundation, swapped agent.
+[Codewhale](https://github.com/Hmbown/CodeWhale) — a terminal coding agent for hosted and local models — in a browser terminal (ttyd + tmux), as a Home Assistant add-on.
 
 ## Highlights
 

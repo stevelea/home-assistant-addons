@@ -1,39 +1,6 @@
 # Development Guide
 
-This guide covers local development and testing workflows for the Claude Terminal and Codewhale Terminal add-ons.
-
-## Codewhale Terminal
-
-The Codewhale Terminal add-on follows the same development flow as Claude Terminal, but builds on Ubuntu 24.04 (Codewhale's aarch64 binary is glibc ≥ 2.39) and runs plain-bash startup scripts (no s6-overlay/bashio — options are read from `/data/options.json` with `jq`).
-
-```bash
-# Build test container (both arches share ubuntu:24.04)
-podman build --build-arg BUILD_FROM=ubuntu:24.04 \
-  -t local/codewhale-terminal:test ./codewhale-terminal
-
-# Run test container (options.json lives in /data inside a real add-on)
-mkdir -p /tmp/test-config /tmp/test-data
-echo '{"provider": "deepseek", "api_key": "sk-test", "auto_launch_codewhale": false}' \
-  > /tmp/test-data/options.json
-podman run -d --name test-codewhale-dev \
-  -p 7681:7681 \
-  -v /tmp/test-config:/config \
-  -v /tmp/test-data:/data \
-  local/codewhale-terminal:test
-
-# Check startup logs / test at http://localhost:7681
-podman logs test-codewhale-dev
-
-# Clean up
-podman stop test-codewhale-dev && podman rm test-codewhale-dev
-```
-
-Key differences from Claude Terminal worth testing:
-
-- **Config generation**: boot writes `$CODEWHALE_HOME/config.toml` from options (`scripts/codewhale-config.sh`). Verify with `codewhale-reconfigure` inside the terminal and `codewhale auth status`.
-- **Binary fetch**: the Dockerfile downloads `codewhale`/`codewhale-tui` from GitHub Releases (pinned `CODEWHALE_VERSION` build arg). The aarch64 build must be verified on arm64/QEMU (glibc binary) — amd64 is a static musl build.
-- **ha-mcp**: uses `codewhale mcp add home-assistant --command "env HOMEASSISTANT_URL=... HOMEASSISTANT_TOKEN=... uvx ..."`.
-- **Shellcheck**: `shellcheck -s bash -e SC1091 codewhale-terminal/run.sh codewhale-terminal/scripts/*.sh`
+This guide covers local development and testing workflows for the Codewhale Terminal add-on.
 
 ## Local Container Testing
 
@@ -48,28 +15,29 @@ Key differences from Claude Terminal worth testing:
 The fastest way to test changes without publishing new versions:
 
 ```bash
-# 1. Build test container
-podman build --build-arg BUILD_FROM=ghcr.io/home-assistant/amd64-base:3.21 \
-  -t local/claude-terminal:test ./claude-terminal
+# 1. Build test container (both arches share ubuntu:24.04)
+podman build --build-arg BUILD_FROM=ubuntu:24.04 \
+  -t local/codewhale-terminal:test ./codewhale-terminal
 
 # 2. Create test configuration (options.json lives in /data inside a real add-on)
 mkdir -p /tmp/test-config /tmp/test-data
-echo '{"auto_launch_claude": false}' > /tmp/test-data/options.json
+echo '{"provider": "deepseek", "api_key": "sk-test", "auto_launch_codewhale": false}' \
+  > /tmp/test-data/options.json
 
 # 3. Run test container
-podman run -d --name test-claude-dev \
+podman run -d --name test-codewhale-dev \
   -p 7681:7681 \
   -v /tmp/test-config:/config \
   -v /tmp/test-data:/data \
-  local/claude-terminal:test
+  local/codewhale-terminal:test
 
 # 4. Check startup logs
-podman logs test-claude-dev
+podman logs test-codewhale-dev
 
 # 5. Test in browser: http://localhost:7681
 
 # 6. Clean up when done
-podman stop test-claude-dev && podman rm test-claude-dev
+podman stop test-codewhale-dev && podman rm test-codewhale-dev
 ```
 
 ### Development Workflow
@@ -78,18 +46,18 @@ podman stop test-claude-dev && podman rm test-claude-dev
 
 ```bash
 # Make changes to code
-vim claude-terminal/run.sh
+vim codewhale-terminal/run.sh
 
 # Rebuild image
-podman build --build-arg BUILD_FROM=ghcr.io/home-assistant/amd64-base:3.21 \
-  -t local/claude-terminal:test ./claude-terminal
+podman build --build-arg BUILD_FROM=ubuntu:24.04 \
+  -t local/codewhale-terminal:test ./codewhale-terminal
 
 # Stop old container
-podman stop test-claude-dev && podman rm test-claude-dev
+podman stop test-codewhale-dev && podman rm test-codewhale-dev
 
 # Start new container with changes
-podman run -d --name test-claude-dev -p 7681:7681 \
-  -v /tmp/test-config:/config local/claude-terminal:test
+podman run -d --name test-codewhale-dev -p 7681:7681 \
+  -v /tmp/test-config:/config -v /tmp/test-data:/data local/codewhale-terminal:test
 
 # Test changes
 open http://localhost:7681
@@ -101,212 +69,70 @@ For script changes without full rebuilds:
 
 ```bash
 # Copy updated script to running container
-podman cp ./claude-terminal/scripts/welcome.sh \
-  test-claude-dev:/opt/scripts/welcome.sh
+podman cp ./codewhale-terminal/scripts/welcome.sh \
+  test-codewhale-dev:/opt/scripts/
 
 # Make executable
-podman exec test-claude-dev chmod +x /opt/scripts/welcome.sh
+podman exec test-codewhale-dev chmod +x /opt/scripts/welcome.sh
 
 # Test directly
-podman exec -it test-claude-dev /opt/scripts/welcome.sh
+podman exec -it test-codewhale-dev /opt/scripts/welcome.sh
 ```
 
 ### Testing Scenarios
 
-#### Launch Mode Testing
+#### Config generation
+
+The add-on writes `$CODEWHALE_HOME/config.toml` from `/data/options.json` at boot
+(`scripts/codewhale-config.sh`). Test it locally without a container:
 
 ```bash
-# Shell mode (banner + bash instead of auto-launching Claude)
-echo '{"auto_launch_claude": false}' > /tmp/test-data/options.json
-
-# Auto-launch mode (default)
-echo '{"auto_launch_claude": true}' > /tmp/test-data/options.json
-# OR
-rm /tmp/test-data/options.json
+mkdir -p /tmp/cwtest
+echo '{"provider": "deepseek", "api_key": "sk-test"}' > /tmp/cwtest/options.json
+CONFIG_FILE=/tmp/cwtest/options.json CODEWHALE_HOME=/tmp/cwtest/.codewhale \
+  bash codewhale-terminal/scripts/codewhale-config.sh
+cat /tmp/cwtest/.codewhale/config.toml   # verify provider/api_key
 ```
 
-#### Authentication Testing
+Inside the container, `codewhale-reconfigure` re-runs this from the terminal.
+
+#### Authentication
+
+Verify the generated config is recognized:
 
 ```bash
-# Start with clean credentials (credentials persist in /data)
-rm -rf /tmp/test-data/.config/claude /tmp/test-data/home/.claude
+CODEWHALE_HOME=/tmp/cwtest/.codewhale codewhale auth status
+# deepseek should show status "config" (set)
 ```
 
-#### Multi-session Testing
+#### ha-mcp
 
-```bash
-# Run multiple containers on different ports
-podman run -d --name test-claude-dev-8681 -p 8681:7681 -v /tmp/test-config-2:/config local/claude-terminal:test
-podman run -d --name test-claude-dev-9681 -p 9681:7681 -v /tmp/test-config-3:/config local/claude-terminal:test
-```
-
-### Debugging Techniques
-
-#### Container Inspection
-
-```bash
-# Follow logs in real-time
-podman logs -f test-claude-dev
-
-# Execute shell inside container
-podman exec -it test-claude-dev /bin/bash
-
-# Check running processes
-podman exec test-claude-dev ps aux
-
-# Inspect environment variables
-podman exec test-claude-dev env | grep CLAUDE
-```
-
-#### Script Debugging
-
-```bash
-# Test scripts with debug output
-podman exec -it test-claude-dev bash -x /opt/scripts/welcome.sh
-
-# Run on-demand diagnostics
-podman exec test-claude-dev /usr/local/bin/claude-doctor
-
-# Check file permissions and locations
-podman exec test-claude-dev ls -la /opt/scripts/
-podman exec test-claude-dev ls -la /data/
-```
-
-#### Network Testing
-
-```bash
-# Test web endpoint
-curl -I http://localhost:7681
-
-# Test WebSocket connection
-curl --include --no-buffer \
-  --header "Connection: Upgrade" \
-  --header "Upgrade: websocket" \
-  --header "Sec-WebSocket-Key: SGVsbG8sIHdvcmxkIQ==" \
-  --header "Sec-WebSocket-Version: 13" \
-  http://localhost:7681/ws
-```
-
-### Performance Testing
-
-#### Resource Usage
-
-```bash
-# Monitor container resources
-podman stats test-claude-dev
-
-# Check container size
-podman images local/claude-terminal:test
-
-# Inspect layers
-podman history local/claude-terminal:test
-```
-
-#### Load Testing
-
-```bash
-# Multiple concurrent connections
-for i in {1..5}; do
-  curl http://localhost:7681 &
-done
-wait
-```
+Registered with `codewhale mcp add home-assistant --command "env HOMEASSISTANT_URL=... HOMEASSISTANT_TOKEN=... uvx ..."`.
+Check with `codewhale mcp list` (config in `$CODEWHALE_HOME/mcp.json`).
 
 ### Common Issues & Solutions
 
-#### Port Already In Use
+- **Port already in use**: run on another port with `-p 7682:7681`.
+- **aarch64 binary won't run**: Codewhale's arm64 binary requires glibc ≥ 2.39
+  (provided by the Ubuntu 24.04 base). Verify with `codewhale-doctor` / `ldd --version`.
+- **Images not on GHCR**: the `Publish Images` workflow pushes on changes to
+  `codewhale-terminal/**` on `main`; run it manually via
+  `gh workflow run publish-images.yml` if needed.
+
+### Cleanup
+
 ```bash
-# Find and kill process using port 7681
-sudo lsof -ti:7681 | xargs kill -9
-
-# Or use different port
-podman run -d --name test-claude-dev -p 7682:7681 -v /tmp/test-config:/config local/claude-terminal:test
-```
-
-#### Volume Mount Issues
-```bash
-# Ensure directories exist and have correct permissions
-mkdir -p /tmp/test-config /tmp/test-data
-chmod 755 /tmp/test-config /tmp/test-data
-
-# Check SELinux labels (if applicable)
-ls -laZ /tmp/test-config/
-```
-
-#### Build Cache Issues
-```bash
-# Force rebuild without cache
-podman build --no-cache --build-arg BUILD_FROM=ghcr.io/home-assistant/amd64-base:3.21 \
-  -t local/claude-terminal:test ./claude-terminal
-
-# Clean up unused images
-podman image prune
-```
-
-### Cleanup Commands
-
-#### Clean Up Test Environment
-```bash
-# Stop and remove test containers
-podman stop test-claude-dev && podman rm test-claude-dev
-
-# Remove test configurations
-rm -rf /tmp/test-config*
-
-# Clean up test images
-podman rmi local/claude-terminal:test
-```
-
-#### Full System Cleanup
-```bash
-# Remove all stopped containers
-podman container prune
-
-# Remove unused images
-podman image prune
-
-# Remove unused volumes
-podman volume prune
+podman stop test-codewhale-dev && podman rm test-codewhale-dev
+podman rmi local/codewhale-terminal:test
 ```
 
 ## Production Deployment
 
-Once testing is complete:
+Release flow: bump `version:` in `codewhale-terminal/config.yaml`, add a
+`CHANGELOG.md` entry, then tag and push — the `Release` workflow validates the
+tag against `config.yaml` and the `Publish Images` workflow rebuilds the GHCR
+images.
 
 ```bash
-# Commit changes
-git add .
-git commit -m "feature: description of changes"
-
-# Update version in config.yaml
-vim claude-terminal/config.yaml
-
-# Push to main branch
-git push origin main
-```
-
-The changes will automatically be built and distributed to Home Assistant users.
-
-## Advanced Testing
-
-### Integration with Home Assistant
-
-```bash
-# Test with real Home Assistant config structure
-mkdir -p /tmp/ha-config/.storage /tmp/ha-data
-echo '{"auto_launch_claude": false}' > /tmp/ha-data/options.json
-
-podman run -d --name test-ha-claude -p 7681:7681 \
-  -v /tmp/ha-config:/config -v /tmp/ha-data:/data local/claude-terminal:test
-```
-
-### Cross-Platform Testing
-
-```bash
-# Test different base images
-podman build --build-arg BUILD_FROM=ghcr.io/home-assistant/aarch64-base:3.21 \
-  -t local/claude-terminal:arm64 ./claude-terminal
-
-podman build --build-arg BUILD_FROM=ghcr.io/home-assistant/armv7-base:3.21 \
-  -t local/claude-terminal:armv7 ./claude-terminal
+git tag v0.1.1 && git push origin v0.1.1
 ```

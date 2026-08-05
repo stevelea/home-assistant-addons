@@ -6,7 +6,7 @@ Codewhale in a web terminal, as a Home Assistant add-on.
 
 This add-on runs the [Codewhale](https://github.com/Hmbown/CodeWhale) coding agent — a Rust TUI/CLI for DeepSeek, OpenAI-compatible gateways, OpenRouter, Ollama, Moonshot/Kimi, and 30+ other hosted and local models — in a browser-based terminal (ttyd + tmux) with your Home Assistant configuration mounted. Open it from the sidebar, set an API key once, and ask Codewhale to write automations, debug YAML, or manage your setup.
 
-It is the Codewhale counterpart of the [Claude Terminal](../claude-terminal/README.md) add-on in this repository: same web-terminal foundation, different agent.
+
 
 ## Installation
 

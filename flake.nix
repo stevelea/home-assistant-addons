@@ -34,22 +34,13 @@
           shellHook = ''
             echo "🏠 Home Assistant Add-on Development Environment"
             echo "Available commands:"
-            echo "  build-addon     - Build the Claude Terminal add-on"
-            echo "  run-addon       - Run the add-on locally"  
-            echo "  validate-addon  - Validate add-on structure"
-            echo "  lint-dockerfile - Lint the Dockerfile"
-            echo "  test-endpoint   - Test add-on web endpoint"
-            echo "  build-codewhale - Build the Codewhale Terminal add-on (Ubuntu base)"
+            echo "  build-codewhale - Build the Codewhale Terminal add-on"
             echo "  run-codewhale   - Run the Codewhale Terminal add-on locally"
+            echo "  lint-codewhale-dockerfile - Lint the Dockerfile"
             echo ""
-            echo "To get started: build-addon"
+            echo "To get started: build-codewhale"
             
             # Create convenience aliases
-            alias build-addon='podman build --build-arg BUILD_FROM=ghcr.io/home-assistant/amd64-base:3.21 -t local/claude-terminal ./claude-terminal'
-            alias run-addon='podman run -p 7681:7681 -v $(pwd)/config:/config local/claude-terminal'
-            alias validate-addon='echo "Note: Home Assistant builder validation requires HA OS environment"'
-            alias lint-dockerfile='hadolint ./claude-terminal/Dockerfile'
-            alias test-endpoint='curl -X GET http://localhost:7681/ || echo "Add-on not running. Use: run-addon"'
             alias build-codewhale='podman build --build-arg BUILD_FROM=ubuntu:24.04 -t local/codewhale-terminal ./codewhale-terminal'
             alias run-codewhale='podman run -p 7681:7681 -v $(pwd)/config:/config local/codewhale-terminal'
             alias lint-codewhale-dockerfile='hadolint ./codewhale-terminal/Dockerfile'
