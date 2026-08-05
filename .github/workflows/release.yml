@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Validate tag matches an add-on's config.yaml
+        id: validate
+        run: |
+          tag_version="${{ steps.version.outputs.version }}"
+          # A release tag may target either add-on; find the one whose
+          # config.yaml version matches, and remember its directory for the
+          # changelog step.
+          for addon in claude-terminal codewhale-terminal; do
+            config_version=$(grep '^version:' "$addon/config.yaml" | sed 's/version: *"\?\([^"]*\)"\?/\1/')
+            if [ "$config_version" = "$tag_version" ]; then
+              echo "matched_addon=$addon" >> "$GITHUB_OUTPUT"
+              echo "Version $tag_version validated against $addon"
+              exit 0
+            fi
+          done
+          echo "::error::Tag version ($tag_version) does not match any add-on's config.yaml version"
+          exit 1
+
+      - name: Extract changelog for this version
+        id: changelog
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          addon="${{ steps.validate.outputs.matched_addon }}"
+          # Extract content between this version's header and the next ## header
+          awk -v ver="$version" \
+            'BEGIN{found=0} /^## /{if(found)exit; if($2==ver)found=1; next} found{print}' \
+            "$addon/CHANGELOG.md" > /tmp/changelog.md
+          if [ ! -s /tmp/changelog.md ]; then
+            echo "::warning::No changelog entry found for version $version in $addon/CHANGELOG.md"
+            echo "Release $version" > /tmp/changelog.md
+          fi
+          echo "Extracted changelog for v${version}:"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "v${{ steps.version.outputs.version }}"
+          body_path: /tmp/changelog.md
+          draft: false
+          prerelease: false

@@ -1,0 +1,13 @@
+# Ubuntu 24.04 (glibc 2.39) for both arches: Codewhale's prebuilt aarch64
+# binary is a glibc build requiring glibc >= 2.39, and the x64 binary is a
+# static musl build that also runs fine on glibc. Using one base keeps the
+# image uniform across architectures (single package manager, single config).
+build_from:
+  aarch64: ubuntu:24.04
+  amd64: ubuntu:24.04
+
+labels:
+  org.opencontainers.image.title: "Home Assistant Add-on: Codewhale Terminal"
+  org.opencontainers.image.description: "Terminal interface for the Codewhale coding agent"
+  org.opencontainers.image.source: "https://github.com/heytcass/home-assistant-addons"
+  org.opencontainers.image.licenses: "MIT"

@@ -1,0 +1,86 @@
+---
+name: "Codewhale Terminal"
+description: "Web terminal with the Codewhale coding agent CLI and persistent config"
+version: "0.1.0"
+slug: "codewhale_terminal"
+init: false
+
+# Prebuilt images on GHCR — the Supervisor pulls these instead of building
+# locally (no build OOM, no image blobs in backups). Tag = version below.
+image: "ghcr.io/heytcass/{arch}-addon-codewhale-terminal"
+
+# Supported architectures. Codewhale ships a static musl x64 binary and a
+# glibc arm64 binary (needs glibc >= 2.39, provided by the Ubuntu 24.04 base).
+arch:
+  - aarch64
+  - amd64
+
+# External resources
+url: "https://github.com/heytcass/home-assistant-addons"
+
+# Web interface configuration
+ingress: true
+ingress_port: 7681
+panel_icon: mdi:whale
+panel_title: "Codewhale Terminal"
+panel_admin: true
+
+# Port configuration
+ports:
+  7681/tcp: null
+ports_description:
+  7681/tcp: "Web terminal (not required for ingress)"
+
+# Add-on configuration options
+options:
+  provider: "deepseek"
+  api_key: ""
+  base_url: ""
+  default_text_model: ""
+  reasoning_effort: "auto"
+  extra_config: ""
+  auto_launch_codewhale: true
+  codewhale_auto_update: true
+  dangerously_skip_permissions: false
+  codewhale_extra_args: ""
+  ha_smart_context: true
+  enable_ha_mcp: true
+  ha_mcp_version: "7.11.0"
+  persistent_apt_packages: []
+  persistent_pip_packages: []
+schema:
+  provider: str?
+  api_key: password?
+  base_url: str?
+  default_text_model: str?
+  reasoning_effort: str?
+  extra_config: str?
+  auto_launch_codewhale: bool?
+  codewhale_auto_update: bool?
+  dangerously_skip_permissions: bool?
+  codewhale_extra_args: str?
+  ha_smart_context: bool?
+  enable_ha_mcp: bool?
+  ha_mcp_version: str?
+  persistent_apt_packages:
+    - str
+  persistent_pip_packages:
+    - str
+
+# Volume mappings for file access
+map:
+  - config:rw            # Home Assistant configuration files
+  - all_addon_configs:rw # Other add-ons' config directories (/addon_configs)
+  - share:rw             # Shared folder between add-ons and HA
+
+# API access for Home Assistant integration
+hassio_api: true
+hassio_role: manager
+homeassistant_api: true
+auth_api: true
+
+# Service startup configuration
+startup: services
+
+# Web UI access URL
+webui: http://[HOST]:[PORT:7681]/
