@@ -1,8 +1,20 @@
 # Changelog
 
+## 0.1.1
+
+Fix: ha-mcp MCP server registration.
+
+- Register ha-mcp with argv-form command/args + env object in mcp.json.
+  Codewhale spawns the mcp.json `command` as a single executable, so the
+  previous shell-style one-liner failed with "MCP stdio spawn failed ...
+  No such file or directory" and the home-assistant tools were unavailable.
+- setup-ha-mcp.sh now writes the entry directly (jq) with HOMEASSISTANT_URL /
+  HOMEASSISTANT_TOKEN passed as literal env values; mcp.json is chmod 600.
+- run.sh delegates to the shared setup-ha-mcp.sh instead of duplicating it.
+
 ## 0.1.0
 
-Initial release. Codewhale Terminal — the Codewhale coding agent in a web terminal (ttyd + tmux) as a Home Assistant add-on, 
+Initial release. Codewhale Terminal — the Codewhale coding agent in a web terminal (ttyd + tmux) as a Home Assistant add-on.
 
 - Web terminal with auto-launched Codewhale (CLI + TUI), tmux session persistence across reconnects
 - API-key auth configured from add-on options; supports all Codewhale providers (DeepSeek, OpenAI-compatible gateways, OpenRouter, Ollama, Moonshot/Kimi, and more)

@@ -1,7 +1,7 @@
 ---
 name: "Codewhale Terminal"
 description: "Web terminal with the Codewhale coding agent CLI and persistent config"
-version: "0.1.0"
+version: "0.1.1"
 slug: "codewhale_terminal"
 init: false
 

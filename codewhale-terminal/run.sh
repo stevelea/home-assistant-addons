@@ -214,45 +214,11 @@ generate_ha_context() {
 
 # Register ha-mcp (Home Assistant MCP Server) with Codewhale
 # Repository: https://github.com/homeassistant-ai/ha-mcp
+# Implementation lives in the shared setup-ha-mcp.sh (also used by
+# `codewhale-reconfigure`); boot only calls it.
 setup_ha_mcp() {
-    if [ "$(get_option 'enable_ha_mcp' 'true')" != "true" ]; then
-        log "ha-mcp integration disabled in configuration"
-        return 0
-    fi
-
-    if [ -z "${SUPERVISOR_TOKEN:-}" ]; then
-        log "WARNING: SUPERVISOR_TOKEN not available - ha-mcp setup skipped"
-        return 0
-    fi
-
-    if ! command -v uvx >/dev/null 2>&1; then
-        log "WARNING: uvx not found - ha-mcp setup skipped"
-        return 0
-    fi
-
-    local version
-    version=$(get_option 'ha_mcp_version' '7.11.0')
-
-    log "Setting up ha-mcp (Home Assistant MCP Server)..."
-    codewhale mcp remove home-assistant >/dev/null 2>&1 || true
-
-    # ha-mcp >= 4.x requires CPython 3.13 exactly, which Ubuntu 24.04 does
-    # not ship — uv provisions a managed 3.13 build (persisted under /data,
-    # so it downloads once). The command runs via /usr/bin/env so it works
-    # whether Codewhale executes it directly or through a shell.
-    if codewhale mcp add home-assistant \
-        --command "env HOMEASSISTANT_URL=http://supervisor/core HOMEASSISTANT_TOKEN=${SUPERVISOR_TOKEN} uvx --python 3.13 --index-strategy unsafe-best-match ha-mcp@${version}" >/dev/null 2>&1; then
-        log "ha-mcp ${version} configured for Codewhale"
-
-        # Pre-warm the uv environment in the background (managed Python
-        # download + dependency resolution) so the first MCP connection
-        # doesn't hit the client startup timeout
-        (uvx --python 3.13 --index-strategy unsafe-best-match \
-            --from "ha-mcp@${version}" python -c "" >/dev/null 2>&1 || true) &
-        log "Pre-warming ha-mcp environment in background"
-    else
-        log "WARNING: failed to configure ha-mcp - continuing without MCP integration"
-    fi
+    source /opt/scripts/setup-ha-mcp.sh
+    setup_ha_mcp_server
 }
 
 # Build extra flags for every Codewhale launch. The value is word-split;

@@ -107,7 +107,7 @@ CODEWHALE_HOME=/tmp/cwtest/.codewhale codewhale auth status
 
 #### ha-mcp
 
-Registered with `codewhale mcp add home-assistant --command "env HOMEASSISTANT_URL=... HOMEASSISTANT_TOKEN=... uvx ..."`.
+Registered by writing an argv-form entry (command+args+env) into `$CODEWHALE_HOME/mcp.json` — see `scripts/setup-ha-mcp.sh`.
 Check with `codewhale mcp list` (config in `$CODEWHALE_HOME/mcp.json`).
 
 ### Common Issues & Solutions

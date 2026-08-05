@@ -3,6 +3,12 @@
 # setup-ha-mcp.sh — register ha-mcp (Home Assistant MCP Server) with
 # Codewhale. Sourced by run.sh (boot) and reconfigure.sh; safe to run
 # directly. Repository: https://github.com/homeassistant-ai/ha-mcp
+#
+# Registration format matters: Codewhale spawns the mcp.json `command` as a
+# single executable and passes `env` values literally to the child. A
+# shell-style one-liner in `command` (e.g. "env A=1 B=2 uvx ...") fails with
+# "MCP stdio spawn failed ... No such file or directory". We therefore write
+# the entry directly with argv-form command/args and a literal env object.
 
 CODEWHALE_HOME="${CODEWHALE_HOME:-/data/.codewhale}"
 CONFIG_FILE="${CONFIG_FILE:-/data/options.json}"
@@ -49,16 +55,33 @@ setup_ha_mcp_server() {
     local version
     version=$(get_option 'ha_mcp_version' '7.11.0')
 
-    # Remove existing ha-mcp configuration if present (to ensure clean state)
-    codewhale mcp remove home-assistant >/dev/null 2>&1 || true
+    mkdir -p "$CODEWHALE_HOME"
+    local mcp_file="$CODEWHALE_HOME/mcp.json"
+
+    # Ensure mcp.json exists (Codewhale creates it lazily; be explicit so we
+    # can merge into it deterministically)
+    if [ ! -f "$mcp_file" ]; then
+        printf '%s\n' \
+            '{"timeouts":{"connect_timeout":10,"execute_timeout":60,"read_timeout":120},"servers":{}}' \
+            > "$mcp_file"
+    fi
 
     # ha-mcp >= 4.x requires CPython 3.13 exactly, which Ubuntu 24.04 does
-    # not ship — uv provisions a managed 3.13 build (persisted under /data
-    # via XDG_DATA_HOME, so it downloads once). The command runs through
-    # /usr/bin/env so the env prefix works whether Codewhale executes the
-    # command directly or via a shell.
-    if codewhale mcp add home-assistant \
-        --command "env HOMEASSISTANT_URL=http://supervisor/core HOMEASSISTANT_TOKEN=${SUPERVISOR_TOKEN} uvx --python 3.13 --index-strategy unsafe-best-match ha-mcp@${version}" >/dev/null 2>&1; then
+    # not ship — uv provisions a managed 3.13 build (persisted under /data,
+    # so it downloads once). The env values are passed literally to the
+    # child, so HOMEASSISTANT_TOKEN carries the Supervisor token at launch.
+    if jq --arg token "${SUPERVISOR_TOKEN}" --arg ver "$version" \
+        '.servers["home-assistant"] = {
+            "command": "uvx",
+            "args": ["--python","3.13","--index-strategy","unsafe-best-match","ha-mcp@\($ver)"],
+            "env": {
+                "HOMEASSISTANT_URL": "http://supervisor/core",
+                "HOMEASSISTANT_TOKEN": $token
+            },
+            "disabled": false
+        }' "$mcp_file" > "${mcp_file}.tmp" 2>/dev/null; then
+        mv "${mcp_file}.tmp" "$mcp_file"
+        chmod 600 "$mcp_file"
         echo "[codewhale-terminal] ha-mcp ${version} configured for Codewhale"
 
         # Pre-warm the uv environment in the background (managed Python
@@ -68,6 +91,7 @@ setup_ha_mcp_server() {
             --from "ha-mcp@${version}" python -c "" >/dev/null 2>&1 || true) &
         echo "[codewhale-terminal] Pre-warming ha-mcp environment in background"
     else
+        rm -f "${mcp_file}.tmp"
         echo "[codewhale-terminal] WARNING: failed to configure ha-mcp - continuing without MCP integration"
     fi
 }

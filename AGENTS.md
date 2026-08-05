@@ -54,7 +54,7 @@ curl -X GET http://localhost:7681/
 4. `update_codewhale` — seed a persistent copy in `/data`, background `codewhale update`, with a runnability guard (a broken persistent binary must not shadow the bundled copy)
 5. `install_persistent_packages` — user-configured apt/pip packages
 6. `generate_ha_context` — background `/config/AGENTS.md` generation via Supervisor API
-7. `setup_ha_mcp` — register ha-mcp via `codewhale mcp add home-assistant --command "env HOMEASSISTANT_URL=... HOMEASSISTANT_TOKEN=... uvx ..."`
+7. `setup_ha_mcp` — register ha-mcp by writing an argv-form entry (command+args+env) into `$CODEWHALE_HOME/mcp.json` — see `scripts/setup-ha-mcp.sh`
 8. `start_web_terminal` — `exec ttyd ... tmux new-session -A -s codewhale 'codewhale [flags]'` (or a plain shell when `auto_launch_codewhale: false`)
 
 ### Key Design Rules
