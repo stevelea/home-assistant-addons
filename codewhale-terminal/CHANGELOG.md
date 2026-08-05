@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.2
+
+- Persist the Supervisor token to `/data/supervisor.token` (mode 600) at every
+  boot, as a standalone copy for in-container tools and scripts. Refreshed on
+  each start; never clobbered with an empty value (e.g. when the container is
+  run manually outside a real Supervisor). The token was already carried in
+  `/data/.codewhale/mcp.json` for ha-mcp; this makes it directly readable.
+
 ## 0.1.1
 
 Fix: ha-mcp MCP server registration.

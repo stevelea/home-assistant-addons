@@ -108,6 +108,7 @@ Note: options are read from `/data/options.json` via `jq` (no bashio). Missing o
 - `CODEWHALE_HOME=/data/.codewhale` (config.toml, mcp.json, sessions)
 - `CODEWHALE_TUI_BIN=/usr/local/bin/codewhale-tui` (repointed at the persistent copy when one exists)
 - `UV_CACHE_DIR=/tmp/uv-cache` (image env — keeps caches out of HA backups)
+- `SUPERVISOR_TOKEN` (injected by the Supervisor) is persisted to `/data/supervisor.token` (mode 600) at boot for in-container tools; it is also carried inside `/data/.codewhale/mcp.json` for ha-mcp
 
 ### Important Constraints
 - Add-on targets Home Assistant OS; amd64 + aarch64 only. Base image is `ubuntu:24.04` (glibc for the aarch64 Codewhale binary).

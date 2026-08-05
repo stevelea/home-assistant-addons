@@ -69,6 +69,15 @@ export CODEWHALE_HOME="$CODEWHALE_HOME"
 export CODEWHALE_TUI_BIN="${CODEWHALE_TUI_BIN:-/usr/local/bin/codewhale-tui}"
 EOF
 
+    # Persist the Supervisor token as a standalone copy in /data so any
+    # in-container tool or script can read it without parsing mcp.json.
+    # Refreshed on every boot; never clobbered with an empty value (e.g. when
+    # the container is run manually outside a real Supervisor).
+    if [ -n "$SUPERVISOR_TOKEN" ]; then
+        printf '%s\n' "$SUPERVISOR_TOKEN" > /data/supervisor.token
+        chmod 600 /data/supervisor.token
+    fi
+
     log "Environment initialized (HOME=${HOME}, CODEWHALE_HOME=${CODEWHALE_HOME})"
 }
 # Install user-facing commands into /usr/local/bin
