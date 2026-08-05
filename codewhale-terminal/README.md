@@ -29,6 +29,10 @@
 - **[Codewhale](https://github.com/Hmbown/CodeWhale)** by [@Hmbown](https://github.com/Hmbown) — the coding agent this add-on runs. MIT.
 - **[ha-mcp](https://github.com/homeassistant-ai/ha-mcp)** — the Home Assistant MCP server integration.
 
+## Disclaimer
+
+**Use at your own risk.** This add-on gives an AI agent write access to your Home Assistant configuration and, via ha-mcp, control over your devices and automations — AI can and will make mistakes. Take a full backup before letting it make changes, and review what it writes. This is an independent community project, not affiliated with or endorsed by Home Assistant, the Codewhale project, or any model/API provider.
+
 ## License
 
 MIT — see the repository [LICENSE](../LICENSE).

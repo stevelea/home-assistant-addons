@@ -65,6 +65,19 @@ This add-on stands on the shoulders of two projects:
 
 Key components bundled for the Home Assistant integration: [ha-mcp](https://github.com/homeassistant-ai/ha-mcp) (Home Assistant MCP server) and [uv](https://github.com/astral-sh/uv) (managed Python provisioning).
 
+## Disclaimer
+
+**Use at your own risk.**
+
+This add-on is provided "as is", without warranty of any kind, express or implied (see the [MIT License](LICENSE)). It gives an AI coding agent direct access to your Home Assistant configuration (`/config`) and, through the Supervisor API and ha-mcp, the ability to control devices and modify automations. AI can and will make mistakes — before letting it make changes:
+
+- **Take a full backup** of Home Assistant first (Settings → System → Backups)
+- Test on a staging instance if you have one
+- **Review anything it writes** before applying it
+- Keep the default approval prompts enabled; treat `dangerously_skip_permissions` as a last resort
+
+This is an independent community project. It is not affiliated with or endorsed by Home Assistant, the Codewhale project, or any model/API provider, and third-party components (Codewhale, ha-mcp, uv, provider APIs) are subject to their own licenses and terms.
+
 ## License
 
 This repository is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
