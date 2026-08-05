@@ -33,6 +33,15 @@ To add this repository to your Home Assistant instance:
 
 If you have any questions or issues with this add-on, please create an issue in this repository.
 
+## Credits
+
+This add-on stands on the shoulders of two projects:
+
+- **[Claude Terminal](https://github.com/heytcass/home-assistant-addons)** by [Tom Cassady (@heytcass)](https://github.com/heytcass) — this add-on is a derivative of that project: the ttyd + tmux web-terminal foundation, the Home Assistant add-on structure, and many operational patterns (persistent `/data` layout, self-update with a runnability guard, ha-mcp wiring, tmux/ttyd configuration) were adapted from it. Licensed MIT.
+- **[Codewhale](https://github.com/Hmbown/CodeWhale)** by [@Hmbown](https://github.com/Hmbown) — the coding agent (Rust TUI/CLI) that runs inside this add-on, supporting DeepSeek, OpenAI-compatible gateways, OpenRouter, Ollama, Moonshot/Kimi, and 30+ other providers. Licensed MIT.
+
+Key components bundled for the Home Assistant integration: [ha-mcp](https://github.com/homeassistant-ai/ha-mcp) (Home Assistant MCP server) and [uv](https://github.com/astral-sh/uv) (managed Python provisioning).
+
 ## License
 
 This repository is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -23,6 +23,12 @@
 - Full documentation: [DOCS.md](DOCS.md)
 - Changelog: [CHANGELOG.md](CHANGELOG.md)
 
+## Credits
+
+- **[Claude Terminal](https://github.com/heytcass/home-assistant-addons)** by [@heytcass](https://github.com/heytcass) — this add-on adapts its web-terminal foundation (ttyd + tmux), Home Assistant add-on structure, and operational patterns. MIT.
+- **[Codewhale](https://github.com/Hmbown/CodeWhale)** by [@Hmbown](https://github.com/Hmbown) — the coding agent this add-on runs. MIT.
+- **[ha-mcp](https://github.com/homeassistant-ai/ha-mcp)** — the Home Assistant MCP server integration.
+
 ## License
 
 MIT — see the repository [LICENSE](../LICENSE).
